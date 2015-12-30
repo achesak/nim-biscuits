@@ -2,8 +2,6 @@
 
 Biscuits is a Nim module for better cookie handling.
 
-Biscuits is a Nim module for better cookie handling.
-
 Differences from cookie module in standard library:
 * Better handling of multiple key-value pairs, particularly with regard to creating cookies.
 * Supports "max-age" cookie field.
