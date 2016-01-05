@@ -208,7 +208,7 @@ proc clearKeys*(c : Biscuit): seq[string] =
 proc hasDomain*(c : Biscuit): bool = 
     ## Returns ``true`` if the given ``Biscuit`` has a domain field set, and ``false`` otherwise.
     
-    return c.domain != nil
+    return c.domain != nil and c.domain != ""
 
 
 proc getDomain*(c : Biscuit, defaultValue : string = ""): string = 
@@ -232,7 +232,7 @@ proc setDomain*(c : Biscuit, domain : string): string =
 proc hasPath*(c : Biscuit): bool = 
     ## Returns ``true`` if the given ``Biscuit`` has a path field set, and ``false`` otherwise.
     
-    return c.path != nil
+    return c.path != nil and c.path != ""
 
 
 proc getPath*(c : Biscuit, defaultValue : string = ""): string = 
@@ -256,7 +256,7 @@ proc setPath*(c : Biscuit, path : string): string =
 proc hasExpires*(c : Biscuit): bool = 
     ## Returns ``true`` if the given ``Biscuit`` has an expires field set, and ``false`` otherwise.
     
-    return c.expires != nil
+    return c.expires != nil and c.expires != ""
 
 
 proc getExpires*(c : Biscuit, defaultValue : string = ""): string = 
@@ -295,7 +295,7 @@ proc setExpiresTimeInfo*(c : Biscuit, expires : TimeInfo): TimeInfo =
 proc hasMaxAge*(c : Biscuit): bool = 
     ## Returns ``true`` if the given ``Biscuit`` has a max-age field set, and ``false`` otherwise.
     
-    return c.maxAge != nil
+    return c.maxAge != nil and c.maxAge != ""
 
 
 proc getMaxAge*(c : Biscuit, defaultValue : string = ""): string = 
@@ -357,3 +357,76 @@ proc setHttpOnly*(c : Biscuit, httpOnly : bool): bool =
     var h : bool = c.httpOnly
     c.httpOnly = httpOnly
     return h
+
+
+proc `[]`*(c : Biscuit, key : string): string = 
+    ## Shortcut for ``getKey()``.
+    
+    return c.getKey(key)
+
+
+proc `[]=`*(c : Biscuit, key : string, value : string) {.noreturn.} = 
+    ## Shortcut for ``setKey()``.
+    
+    discard c.setKey(key, value)
+
+
+proc `==`*(c1 : Biscuit, c2 : Biscuit): bool = 
+    ## Equality operator for ``Biscuit``.
+    
+    # Check that the cookie fields are the same.
+    if c1.domain != c2.domain:
+        return false
+    if c1.path != c2.path:
+        return false
+    if c1.expires != c2.expires:
+        return false
+    if c1.maxAge != c2.maxAge:
+        return false
+    if c1.secure != c2.secure:
+        return false
+    if c1.httpOnly != c2.httpOnly:
+        return false
+    
+    # Check that the data fields are the same.
+    if len(c1.data) != len(c2.data):
+        return false
+    for key, value in c1.data:
+        if not c2.hasKey(key):
+            return false
+        if value != c2.getKey(key):
+            return false
+    for key, value in c2.data:
+        if not c1.hasKey(key):
+            return false
+        if value != c1.getKey(key):
+            return false
+    
+    return true
+
+
+proc `!=`*(c1 : Biscuit, c2 : Biscuit): bool = 
+    ## Inequality operator for ``Biscuit``.
+    
+    return not (c1 == c2)
+
+
+iterator pairs*(c : Biscuit): tuple[key : string, value : string] = 
+    ## Iterates over key-value pairs.
+    
+    for key, value in c.data:
+        yield (key, value)
+
+
+iterator keys*(c : Biscuit): string = 
+    ## Iterates over keys.
+    
+    for key in keys(c.data):
+        yield key
+
+
+iterator values*(c : Biscuit): string = 
+    ## Iterates over values.
+    
+    for value in values(c.data):
+        yield value
