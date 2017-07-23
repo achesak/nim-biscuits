@@ -51,6 +51,7 @@ import cookies
 import strtabs
 import strutils
 import times
+import unicode
 
 
 type
@@ -74,22 +75,23 @@ proc parseBiscuit*(s : string): Biscuit =
     c.data = newStringTable(modeCaseSensitive)
 
     for key, value in cs:
+        var keyCheck = unicode.toLower(key)
 
-        if key.toLower() == "domain":
+        if keyCheck == "domain":
             c.domain = value
-        elif key.toLower() == "path":
+        elif keyCheck == "path":
             c.path = value
-        elif key.toLower() == "expires":
+        elif keyCheck == "expires":
             c.expires = value
-        elif key.toLower() == "max-age":
+        elif keyCheck == "max-age":
             c.maxAge = value
-        elif key.toLower() == "secure":
-            if value.toLower() != "false":
+        elif keyCheck == "secure":
+            if unicode.toLower(value) != "false":
                 c.secure = true
             else:
                 c.secure = false
-        elif key.toLower() == "httponly":
-            if value.toLower() != "false":
+        elif keyCheck == "httponly":
+            if unicode.toLower(value) != "false":
                 c.httpOnly = true
             else:
                 c.httpOnly = false
@@ -100,7 +102,7 @@ proc parseBiscuit*(s : string): Biscuit =
     # Double check here. Kind of messy but works for now.
     var fields : seq[string] = s.split(";")
     for i in 0..high(fields):
-        fields[i] = fields[i].strip(leading = true, trailing = true).toLower()
+        fields[i] = unicode.toLower(fields[i].strip(leading = true, trailing = true))
         if fields[i] == "secure":
             c.secure = true
         if fields[i] == "httponly":
@@ -183,7 +185,7 @@ proc setKey*(c : Biscuit, key : string, value : string, overwrite : bool = true)
     ## associated with it, nothing will be changed.
 
     # Don't allow reserved fields.
-    if key.toLower() in @["domain", "path", "expires", "max-age", "secure", "httponly"]:
+    if unicode.toLower(key) in @["domain", "path", "expires", "max-age", "secure", "httponly"]:
         raise newException(BiscuitError, "Key cannot be set to a reserved field.")
 
     if c.data.hasKey(key) and not overwrite:
@@ -311,7 +313,7 @@ proc getMaxAgeTimeInfo*(c : Biscuit): TimeInfo =
     ## Gets the value of the max-age field for the given ``Biscuit``. Returns the field as a ``TimeInfo`` object.
 
     var t : string = c.getMaxAge()
-    return parseFloat(t).fromSeconds().timeToTimeInfo()
+    return parseFloat(t).fromSeconds().getLocalTime()
 
 
 proc setMaxAge*(c : Biscuit, maxAge : string): string =
@@ -326,7 +328,7 @@ proc setMaxAgeTimeInfo*(c : Biscuit, maxAge : TimeInfo): TimeInfo =
     ## Sets the max-age field to the specifiied value.
 
     var m : TimeInfo = c.getMaxAgeTimeInfo()
-    c.maxAge = int(maxAge.timeInfoToTime().toSeconds()).intToStr()
+    c.maxAge = int(maxAge.toTime().toSeconds()).intToStr()
     return m
 
 
