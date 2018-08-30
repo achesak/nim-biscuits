@@ -270,8 +270,8 @@ proc getExpires*(c : Biscuit, defaultValue : string = ""): string =
         return c.expires
 
 
-proc getExpiresTimeInfo*(c : Biscuit): TimeInfo =
-    ## Gets the value of the expires field for the given ``Biscuit``. Returns the field as a ``TimeInfo`` object.
+proc getExpiresDateTime*(c : Biscuit): DateTime =
+    ## Gets the value of the expires field for the given ``Biscuit``. Returns the field as a ``DateTime`` object.
 
     var t : string = c.getExpires()
     return parse(t, "ddd, dd MMM yyyy hh:mm:ss UTC")
@@ -285,10 +285,10 @@ proc setExpires*(c : Biscuit, expires : string): string =
     return e
 
 
-proc setExpiresTimeInfo*(c : Biscuit, expires : TimeInfo): TimeInfo =
+proc setExpiresDateTime*(c : Biscuit, expires : DateTime): DateTime =
     ## Sets the expires field to the specifiied value.
 
-    var e : TimeInfo = parse(c.expires, "ddd, dd MMM yyyy hh:mm:ss UTC")
+    var e : DateTime = parse(c.expires, "ddd, dd MMM yyyy hh:mm:ss UTC")
     c.expires = format(expires, "ddd, dd MMM yyyy HH:mm:ss UTC")
     return e
 
@@ -309,11 +309,11 @@ proc getMaxAge*(c : Biscuit, defaultValue : string = ""): string =
         return c.maxAge
 
 
-proc getMaxAgeTimeInfo*(c : Biscuit): TimeInfo =
-    ## Gets the value of the max-age field for the given ``Biscuit``. Returns the field as a ``TimeInfo`` object.
+proc getMaxAgeDateTime*(c : Biscuit): DateTime =
+    ## Gets the value of the max-age field for the given ``Biscuit``. Returns the field as a ``DateTime`` object.
 
     var t : string = c.getMaxAge()
-    return parseFloat(t).fromSeconds().getLocalTime()
+    return parseInt(t).fromUnix().local()
 
 
 proc setMaxAge*(c : Biscuit, maxAge : string): string =
@@ -324,11 +324,11 @@ proc setMaxAge*(c : Biscuit, maxAge : string): string =
     return m
 
 
-proc setMaxAgeTimeInfo*(c : Biscuit, maxAge : TimeInfo): TimeInfo =
+proc setMaxAgeDateTime*(c : Biscuit, maxAge : DateTime): DateTime =
     ## Sets the max-age field to the specifiied value.
 
-    var m : TimeInfo = c.getMaxAgeTimeInfo()
-    c.maxAge = int(maxAge.toTime().toSeconds()).intToStr()
+    var m : DateTime = c.getMaxAgeDateTime()
+    c.maxAge = int(maxAge.toTime().toUnix()).intToStr()
     return m
 
 
