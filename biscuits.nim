@@ -102,7 +102,7 @@ proc parseBiscuit*(s: string): Biscuit =
     # Double check here. Kind of messy but works for now.
     var fields: seq[string] = s.split(";")
     for i in 0..high(fields):
-        fields[i] = unicode.toLower(fields[i].strip(leading = true, trailing = true))
+        fields[i] = unicode.toLower(strutils.strip(fields[i],leading = true, trailing = true))
         if fields[i] == "secure":
             c.secure = true
         if fields[i] == "httponly":
@@ -138,20 +138,20 @@ proc toString*(c: Biscuit, includeName: bool = false): string =
         s &= "Set-Cookie: "
     for key, value in c.data:
         s &= key & "=" & value & "; "
-    if c.domain != nil and c.domain != "":
+    if c.domain != "":
         s &= "domain=" & c.domain & "; "
-    if c.path != nil and c.path != "":
+    if c.path != "":
         s &= "path=" & c.path & "; "
-    if c.expires != nil and c.expires != "":
+    if c.expires != "":
         s &= "expires=" & c.expires & "; "
-    if c.maxAge != nil and c.maxAge != "":
+    if c.maxAge != "":
         s &= "max-age=" & c.maxAge & "; "
     if c.secure:
         s &= "secure; "
     if c.httpOnly:
         s &= "HttpOnly; "
 
-    s = s.strip(trailing = true)
+    s = strutils.strip(s, trailing = true)
     if s.endsWith(";"):
         s = s[0..high(s) - 1]
 
@@ -209,14 +209,14 @@ proc clearKeys*(c: Biscuit): seq[string] =
 proc hasDomain*(c: Biscuit): bool =
     ## Returns ``true`` if the given ``Biscuit`` has a domain field set, and ``false`` otherwise.
 
-    return c.domain != nil and c.domain != ""
+    return c.domain != ""
 
 
 proc getDomain*(c: Biscuit, defaultValue: string = ""): string =
     ## Gets the value of the domain field for the given ``Biscuit``. If no domain field is set and a ``defaultValue`` is given,
     ## the default value is returned instead.
 
-    if c.domain == nil:
+    if c.domain == "":
         return defaultValue
     else:
         return c.domain
@@ -233,14 +233,14 @@ proc setDomain*(c: Biscuit, domain: string): string =
 proc hasPath*(c: Biscuit): bool =
     ## Returns ``true`` if the given ``Biscuit`` has a path field set, and ``false`` otherwise.
 
-    return c.path != nil and c.path != ""
+    return c.path != ""
 
 
 proc getPath*(c: Biscuit, defaultValue: string = ""): string =
     ## Gets the value of the path field for the given ``Biscuit``. If no path field is set and a ``defaultValue`` is given,
     ## the default value is returned instead.
 
-    if c.path == nil:
+    if c.path == "":
         return defaultValue
     else:
         return c.path
@@ -257,14 +257,14 @@ proc setPath*(c: Biscuit, path: string): string =
 proc hasExpires*(c: Biscuit): bool =
     ## Returns ``true`` if the given ``Biscuit`` has an expires field set, and ``false`` otherwise.
 
-    return c.expires != nil and c.expires != ""
+    return c.expires != ""
 
 
 proc getExpires*(c: Biscuit, defaultValue: string = ""): string =
     ## Gets the value of the expires field for the given ``Biscuit``. If no expires field is set and a ``defaultValue`` is given,
     ## the default value is returned instead.
 
-    if c.expires == nil:
+    if c.expires == "":
         return defaultValue
     else:
         return c.expires
@@ -274,7 +274,7 @@ proc getExpiresDateTime*(c: Biscuit): DateTime =
     ## Gets the value of the expires field for the given ``Biscuit``. Returns the field as a ``DateTime`` object.
 
     var t: string = c.getExpires()
-    return parse(t, "ddd, dd MMM yyyy hh:mm:ss UTC")
+    return times.parse(t, "ddd, dd MMM yyyy hh:mm:ss", utc())
 
 
 proc setExpires*(c: Biscuit, expires: string): string =
@@ -288,22 +288,22 @@ proc setExpires*(c: Biscuit, expires: string): string =
 proc setExpiresDateTime*(c: Biscuit, expires: DateTime): DateTime =
     ## Sets the expires field to the specifiied value.
 
-    var e: DateTime = parse(c.expires, "ddd, dd MMM yyyy hh:mm:ss UTC")
-    c.expires = format(expires, "ddd, dd MMM yyyy HH:mm:ss UTC")
+    var e: DateTime = times.parse(c.expires, "ddd, dd MMM yyyy hh:mm:ss", utc())
+    c.expires = expires.format("ddd, dd MMM yyyy HH:mm:ss z")
     return e
 
 
 proc hasMaxAge*(c: Biscuit): bool =
     ## Returns ``true`` if the given ``Biscuit`` has a max-age field set, and ``false`` otherwise.
 
-    return c.maxAge != nil and c.maxAge != ""
+    return c.maxAge != ""
 
 
 proc getMaxAge*(c: Biscuit, defaultValue: string = ""): string =
     ## Gets the value of the max-age field for the given ``Biscuit``. If no max-age field is set and a ``defaultValue`` is given,
     ## the default value is returned instead.
 
-    if c.maxAge == nil:
+    if c.maxAge == "":
         return defaultValue
     else:
         return c.maxAge
